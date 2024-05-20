@@ -11,16 +11,26 @@ set +x
 echo 'The following command extracts the value of the <name/> element'
 echo 'within <project/> of your Java/Maven project''s "pom.xml" file.'
 set -x
-NAME=`mvn -q -DforceStdout help:evaluate -Dexpression=project.name`
+NAME=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.name | sed -e 's/[^[:print:]]//g')
+echo "Project Name: ${NAME}"
 set +x
 
 echo 'The following command behaves similarly to the previous one but'
 echo 'extracts the value of the <version/> element within <project/> instead.'
 set -x
-VERSION=`mvn -q -DforceStdout help:evaluate -Dexpression=project.version`
+VERSION=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version | sed -e 's/[^[:print:]]//g')
+echo "Project Version: ${VERSION}"
 set +x
 
 echo 'The following command runs and outputs the execution of your Java'
 echo 'application (which Jenkins built using Maven) to the Jenkins UI.'
 set -x
-java -jar target/${NAME}-${VERSION}.jar
+JAR_FILE="target/${NAME}-${VERSION}.jar"
+echo "Jar File: ${JAR_FILE}"
+
+if [ -f "${JAR_FILE}" ]; then
+    java -jar "${JAR_FILE}"
+else
+    echo "Error: Jar file ${JAR_FILE} not found"
+    exit 1
+fi
